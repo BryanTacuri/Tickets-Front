@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AddComponent } from './pages-planes/add/add.component';
-import { EditComponent } from './pages-planes/edit/edit.component';
-import { ListComponent } from './pages-planes/list/list.component';
+import { AddComponent } from './pages-ticket/add/add.component';
+import { EditComponent } from './pages-ticket/edit/edit.component';
+import { ListComponent } from './pages-ticket/list/list.component';
 
 const routes: Routes = [
   {
