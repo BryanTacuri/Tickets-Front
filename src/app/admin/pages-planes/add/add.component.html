@@ -70,9 +70,19 @@
                     </nz-form-item>
 
 
+                    <nz-divider></nz-divider>
                 </form>
 
-                <form nz-form [formGroup]="validateFormHistorial">
+                <div style="text-align: center;">
+                    <button *ngIf="!showFormHistorial" nz-button nzType="primary" (click)="showModalHistorial()">Agregar
+                        historial</button>
+
+                    <button *ngIf="showFormHistorial" nz-button nzType="primary" nzDanger nz-popconfirm
+                        nzPopconfirmTitle="¿Esta seguro de ocultar el historial? Los campos ingresados se perderán."
+                        (nzOnConfirm)="ocultarlHistorial()">Ocultar historial</button>
+                </div>
+
+                <form *ngIf="showFormHistorial" nz-form [formGroup]="validateFormHistorial">
 
                     <nz-divider style="color: #3e467d; font-size: 20px; font-weight: bold;"
                         nzText="Historial de incidencias"></nz-divider>
@@ -100,7 +110,17 @@
                         </nz-form-control>
                     </nz-form-item>
 
+                    <nz-form-item>
+                        <nz-form-label [nzSpan]="7">Fecha atención</nz-form-label>
+                        <nz-form-control [nzSpan]="12">
+                            <nz-input-group>
 
+                                <input nz-input [disabled]="true" formControlName="fecha_atencion"
+                                    placeholder="Fecha de atención" />
+                            </nz-input-group>
+
+                        </nz-form-control>
+                    </nz-form-item>
 
 
                     <div formArrayName="details" *ngFor="let step of details.controls; let i = index">

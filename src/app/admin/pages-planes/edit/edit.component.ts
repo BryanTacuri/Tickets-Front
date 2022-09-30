@@ -22,6 +22,7 @@ export class EditComponent implements OnInit {
   validateForm!: FormGroup;
   validateFormTicket!: FormGroup;
   detailsFromGrup!: FormGroup;
+  showFormHistorial: boolean = false;
 
   id: any;
   htmlContent: any;
@@ -44,10 +45,7 @@ export class EditComponent implements OnInit {
   addDetail(id: any): void {
     this.detailsFromGrup = this.fb.group({
       // name: [null, [Validators.required]],
-      descripcion: [
-        null,
-        Validators.compose([Validators.required, Validators.maxLength(100)]),
-      ],
+      descripcion: [null, Validators.compose([Validators.maxLength(100)])],
       id: [null],
       status: [null],
     });
@@ -77,27 +75,23 @@ export class EditComponent implements OnInit {
 
     this.validateForm = this.fb.group({
       id: [null],
-      usuario_soporte: [null, [Validators.required]],
+      usuario_soporte: [null],
 
-      comentario: [null, [Validators.maxLength(150)]],
-      fecha_atencion: [null, [Validators.required]],
+      comentario: [null],
+      fecha_atencion: [null],
       tickets_id: [null],
 
       details: this.fb.array([
         this.fb.group({
           // name: [null, [Validators.required]],
-          descripcion: [
-            null,
-            Validators.compose([
-              Validators.required,
-              Validators.maxLength(150),
-            ]),
-          ],
+          descripcion: [null, Validators.compose([Validators.maxLength(150)])],
           id: [null],
           status: [null],
         }),
       ]),
     });
+
+    this.validateForm.controls['fecha_atencion'].disable();
 
     let p1 = this.getTicketbyId(this.valueService.idTicket);
 
@@ -118,8 +112,6 @@ export class EditComponent implements OnInit {
         .subscribe({
           next: (res) => {
             this.ticket = res;
-            this.historial = this.ticket.historial_incidencia;
-
             this.validateFormTicket.patchValue({
               persona_solicitante: this.ticket.persona_solicitante,
               fecha_ingreso: this.ticket.fecha_ingreso,
@@ -127,27 +119,54 @@ export class EditComponent implements OnInit {
               descripcion: this.ticket.descripcion,
               status: this.ticket.status,
             });
+            if (this.ticket.historial_incidencia) {
+              this.validateForm.controls['usuario_soporte'].setValidators([
+                Validators.required,
+              ]);
+              //hacer requerido details descripcion de validateFormHistorial
+              this.details.controls[0]
+                .get('descripcion')
+                .setValidators([Validators.required]);
+              this.historial = this.ticket.historial_incidencia;
 
-            this.validateForm.patchValue({
-              id: this.historial.id,
-              usuario_soporte: this.historial.usuario_soporte,
-              comentario: this.historial.comentario,
-              fecha_atencion: this.historial.fecha_atencion,
-              tickets_id: this.historial.tickets_id,
-            });
-            this.removeDetail(0);
+              //this.historial.fecha_atencion convertir a formato AAAA-MM-DD
+              this.historial.fecha_atencion = formatISO(
+                new Date(this.historial.fecha_atencion),
+                { representation: 'date' }
+              );
 
-            this.historial_detalle = this.historial.historial_detalles;
+              this.validateForm.patchValue({
+                id: this.historial.id,
+                usuario_soporte: this.historial.usuario_soporte,
+                comentario: this.historial.comentario,
+                //formatear fecha_atencion a string
+                fecha_atencion: this.historial.fecha_atencion,
 
-            for (let i = 0; i < this.historial.historial_detalles.length; i++) {
-              this.addDetail(this.historial.historial_detalles[i].id);
-              this.details.at(i).patchValue({
-                descripcion: this.historial.historial_detalles[i].descripcion,
-                id: this.historial.historial_detalles[i].id,
-                status: this.historial.historial_detalles[i].status,
+                tickets_id: this.historial.tickets_id,
               });
+              this.removeDetail(0);
+
+              this.historial_detalle = this.historial.historial_detalles;
+
+              for (
+                let i = 0;
+                i < this.historial.historial_detalles.length;
+                i++
+              ) {
+                this.addDetail(this.historial.historial_detalles[i].id);
+                this.details.at(i).patchValue({
+                  descripcion: this.historial.historial_detalles[i].descripcion,
+                  id: this.historial.historial_detalles[i].id,
+                  status: this.historial.historial_detalles[i].status,
+                });
+              }
             }
 
+            this.validateForm.patchValue({
+              fecha_atencion: formatISO(new Date(), {
+                representation: 'date',
+              }),
+            });
             this.loading = false;
 
             resolve();
@@ -169,6 +188,7 @@ export class EditComponent implements OnInit {
       this.updateTicket(this.validateForm.value, this.validateFormTicket.value);
     } else {
       this.message.error('Complete los campos requeridos');
+      console.log(this.validateForm.value);
       Object.values(this.validateFormTicket.controls).forEach((control) => {
         if (control.invalid) {
           control.markAsDirty();
@@ -212,7 +232,9 @@ export class EditComponent implements OnInit {
       });
     }
 
-    formDataTicket.historial = formData;
+    if (this.showFormHistorial || this.ticket.historial_incidencia) {
+      formDataTicket.historial = formData;
+    }
     console.log('datafinal', formDataTicket);
 
     this.loading = true;
@@ -221,7 +243,7 @@ export class EditComponent implements OnInit {
       .subscribe({
         next: (res) => {
           this.loading = false;
-          this.message.success('ticket actualizado correctamente');
+          this.message.success('Ticket actualizado correctamente');
 
           this.router.navigate(['/admin']);
         },
@@ -230,5 +252,32 @@ export class EditComponent implements OnInit {
           this.message.error(err.error.message || JSON.stringify(err.error));
         },
       });
+  }
+
+  showModalHistorial(): void {
+    this.showFormHistorial = true;
+    this.validateForm.controls['usuario_soporte'].setValidators([
+      Validators.required,
+    ]);
+    //hacer requerido details descripcion de validateFormHistorial
+    this.details.controls[0]
+      .get('descripcion')
+      .setValidators([Validators.required]);
+  }
+
+  ocultarlHistorial(): void {
+    this.showFormHistorial = false;
+    this.validateForm.controls['usuario_soporte'].clearValidators();
+
+    this.details.controls[0].get('descripcion').clearValidators();
+
+    //reset form validateFormHistorial
+    this.validateForm.reset();
+    //elimianar los details generados menos 1
+
+    this.details.clear();
+    this.addDetail(0);
+
+    this.detailsFromGrup.controls[0].get('descripcion').clearValidators();
   }
 }

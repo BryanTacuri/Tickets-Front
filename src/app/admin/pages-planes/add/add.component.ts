@@ -16,6 +16,8 @@ export class AddComponent implements OnInit {
   dateFormat = 'yyyy/MM/dd';
   detailsFromGrup!: FormGroup;
   idManual: any;
+  value?: string;
+  showFormHistorial: boolean = false;
 
   constructor(
     private router: Router,
@@ -30,10 +32,7 @@ export class AddComponent implements OnInit {
 
   addStep(id: any): void {
     this.detailsFromGrup = this.fb.group({
-      descripcion: [
-        null,
-        Validators.compose([Validators.required, Validators.maxLength(100)]),
-      ],
+      descripcion: [null, Validators.compose([Validators.maxLength(100)])],
     });
     this.details.push(this.detailsFromGrup);
   }
@@ -52,24 +51,30 @@ export class AddComponent implements OnInit {
     });
 
     this.validateFormHistorial = this.fb.group({
-      usuario_soporte: [null, [Validators.required]],
+      usuario_soporte: [null],
       comentario: [null],
+      fecha_atencion: [null],
 
       details: this.fb.array([
         this.fb.group({
-          descripcion: [
-            null,
-            Validators.compose([
-              Validators.required,
-              Validators.maxLength(150),
-            ]),
-          ],
+          descripcion: [null, Validators.compose([Validators.maxLength(150)])],
         }),
       ]),
     });
 
     this.validateForm.patchValue({
       fecha_ingreso: new Date(),
+    });
+
+    //desabilitar campos de validateFormHistorial
+    this.validateFormHistorial.controls['fecha_atencion'].disable();
+
+    this.validateFormHistorial.patchValue({
+      //adjuntar fecha convertida a string
+
+      fecha_atencion: formatISO(new Date(), {
+        representation: 'date',
+      }),
     });
   }
 
@@ -116,7 +121,10 @@ export class AddComponent implements OnInit {
       });
     }
 
-    formData.historial = formDataHistorial;
+    if (this.showFormHistorial) {
+      formData.historial = formDataHistorial;
+    }
+    console.log(formData);
 
     this.loading = true;
     this.ticketService.addTicket(formData).subscribe({
@@ -130,5 +138,38 @@ export class AddComponent implements OnInit {
         this.message.error(err.error.message || JSON.stringify(err.error));
       },
     });
+  }
+
+  showModalHistorial(): void {
+    this.showFormHistorial = true;
+    //hacer requerido los campos de validateFormHistorial
+    this.validateFormHistorial.controls['usuario_soporte'].setValidators([
+      Validators.required,
+    ]);
+    //hacer requerido details descripcion de validateFormHistorial
+    this.details.controls[0]
+      .get('descripcion')
+      .setValidators([Validators.required]);
+  }
+  ocultarlHistorial(): void {
+    this.validateFormHistorial.controls['usuario_soporte'].clearValidators();
+    //quitar requerido de todos los details descripcion de validateFormHistorial
+
+    this.details.controls[0].get('descripcion').clearValidators();
+    this.showFormHistorial = false;
+    //reset form validateFormHistorial
+    this.validateFormHistorial.reset();
+    //quitar requerido los campos de validateFormHistorial
+
+    //elimianar los details generados menos 1
+
+    this.details.clear();
+    this.addStep(0);
+
+    //quitar requerido details descripcion de detailFormGrup
+
+    this.detailsFromGrup.controls['descripcion'].clearValidators();
+
+    this.details.controls[0].get('descripcion').clearValidators();
   }
 }
