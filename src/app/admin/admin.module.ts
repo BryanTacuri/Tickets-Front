@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PlanesAdminRoutingModule } from './admin-routing.module';
 import { AddComponent } from './pages-planes/add/add.component';
-import { SlugifyPipe } from '../Pipes/slugify.pipe';
 
 import { ListComponent } from './pages-planes/list/list.component';
 import { NgZorroModule } from '../ngzorro/ngzorro.module';
@@ -11,7 +10,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { EditComponent } from './pages-planes/edit/edit.component';
 
 @NgModule({
-  declarations: [AddComponent, ListComponent, EditComponent, SlugifyPipe],
+  declarations: [AddComponent, ListComponent, EditComponent],
   imports: [
     CommonModule,
     NgZorroModule,
@@ -21,7 +20,5 @@ import { EditComponent } from './pages-planes/edit/edit.component';
     FormsModule,
     ReactiveFormsModule,
   ],
-  exports: [SlugifyPipe],
-  providers: [SlugifyPipe],
 })
 export class PlanesAdminModule {}

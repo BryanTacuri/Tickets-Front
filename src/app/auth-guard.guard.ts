@@ -58,12 +58,13 @@ export class AuthGuardGuard implements CanActivate {
 
   checkUserLogin(route: ActivatedRouteSnapshot, url: any): boolean {
     if (this.valueService.isAuthenticated) {
-      this.router.navigate(['/admin']);
-
+      
       return true;
+    }else{
+      this.router.navigate(['/login']);
+      return false;
     }
 
-    this.router.navigate(['/login']);
-    return false;
+   
   }
 }

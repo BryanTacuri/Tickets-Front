@@ -10,7 +10,7 @@ const routes: Routes = [
     path: 'admin',
     loadChildren: () =>
       import('./admin/admin.module').then((m) => m.PlanesAdminModule),
-    // canActivate: [AuthGuardGuard],
+    canActivate: [AuthGuardGuard],
   },
 
   { path: '**', redirectTo: '', pathMatch: 'full' },

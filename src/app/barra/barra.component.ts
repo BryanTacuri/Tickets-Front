@@ -33,6 +33,11 @@ export class BarraComponent implements OnInit {
     this.servicioBarra.searchDate.emit(this.fechaFormat);
   }
 
+  reset() {
+    this.inputSearch.setValue('');
+    this.servicioBarra.search.emit(this.inputSearch.value);
+  }
+
   onChange() {
     this.inputSearch.valueChanges
       .pipe(

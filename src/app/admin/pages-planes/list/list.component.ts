@@ -5,7 +5,6 @@ import { NzTableQueryParams } from 'ng-zorro-antd/table';
 import { BarraService } from 'src/app/services/barra.service';
 import { Pagination } from 'src/app/models/Pagination';
 import { Ticket } from 'src/app/models/Ticket';
-import { SlugifyPipe } from 'src/app/Pipes/slugify.pipe';
 import { ValueService } from 'src/app/services/value.service';
 import { TicketService } from 'src/app/services/ticket.service';
 
@@ -13,7 +12,6 @@ import { TicketService } from 'src/app/services/ticket.service';
   selector: 'app-list',
   templateUrl: './list.component.html',
   styleUrls: ['./list.component.css'],
-  providers: [SlugifyPipe],
 })
 export class ListComponent implements OnInit, OnDestroy {
   search: string = '';
@@ -43,8 +41,7 @@ export class ListComponent implements OnInit, OnDestroy {
     private barraService: BarraService,
     private valueService: ValueService,
     private ticketService: TicketService,
-    private message: NzMessageService,
-    private slugify: SlugifyPipe // private slugify: SlugifyPipe
+    private message: NzMessageService
   ) {
     this.pageIndex = 1;
     this.pageTotal = 0;
@@ -60,7 +57,6 @@ export class ListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    console.log('list', this.valueService.is_clave_provisional);
     let p1 = this.getAllTickets(this.params);
 
     this.loading = true;
@@ -110,7 +106,6 @@ export class ListComponent implements OnInit, OnDestroy {
         }
       );
     });
-    // this.barraService.search.unsubscribe();
   }
 
   getIndexNumber(i: any) {
@@ -173,9 +168,8 @@ export class ListComponent implements OnInit, OnDestroy {
   }
 
   editRow(id: any): void {
-    // this.valueService.setIsNombreManual(name);
-    this.valueService.setIsidPlan(id);
-    this.valueService.idPlan = id;
+    this.valueService.setIsidTicket(id);
+    this.valueService.idTicket = id;
     this.router.navigate(['/admin/ticket/edit', id]);
   }
 

@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { SecurityService } from '../services/security.service';
 import { AuthService } from '../services/auth.service';
 
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -27,7 +25,7 @@ export class LoginComponent implements OnInit {
     private valueService: ValueService
   ) {
     this.valueService.CerrarSesion();
-    this.urlImageLogo = 'assets/img/logoCruvermed.png';
+    this.urlImageLogo = 'assets/ticket.png';
   }
 
   ngOnInit(): void {
@@ -54,18 +52,15 @@ export class LoginComponent implements OnInit {
 
   onLogin(formData: any): void {
     this.loading = true;
-   
-    
+
     this.userService.login(formData).subscribe({
       next: (res) => {
         this.loading = false;
         this.valueService.setIsAuth(true);
-        // this.valueService.isAuthenticated = true;
+        this.valueService.isAuthenticated = true;
+
         this.valueService.setToken(res.access_token);
-        // this.valueService.token = res.access_token;
-        //isadmin deberia ser iduser
         this.valueService.setIsidAdmin(res.user.id);
-        // this.valueService.idAdmin = res.user.id;
 
         this.router.navigate(['/admin']);
       },
@@ -73,6 +68,6 @@ export class LoginComponent implements OnInit {
         this.loading = false;
         this.message.error('Usuario o contraseña incorrectos');
       },
-    }); 
+    });
   }
 }

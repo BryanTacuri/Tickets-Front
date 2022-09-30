@@ -3,8 +3,6 @@ import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { formatISO } from 'date-fns';
-
-import { ValueService } from 'src/app/services/value.service';
 import { TicketService } from 'src/app/services/ticket.service';
 @Component({
   selector: 'app-add',
@@ -13,10 +11,8 @@ import { TicketService } from 'src/app/services/ticket.service';
 })
 export class AddComponent implements OnInit {
   loading: boolean = false;
-  dataFound: String = 'No hay archivos cargados';
   validateForm!: FormGroup;
   validateFormHistorial!: FormGroup;
-
   dateFormat = 'yyyy/MM/dd';
   detailsFromGrup!: FormGroup;
   idManual: any;
@@ -61,7 +57,6 @@ export class AddComponent implements OnInit {
 
       details: this.fb.array([
         this.fb.group({
-          // name: [null, [Validators.required]],
           descripcion: [
             null,
             Validators.compose([
@@ -73,7 +68,6 @@ export class AddComponent implements OnInit {
       ]),
     });
 
-    //poner en fecha_ingreso la fecha actual
     this.validateForm.patchValue({
       fecha_ingreso: new Date(),
     });
@@ -103,11 +97,6 @@ export class AddComponent implements OnInit {
 
       if (this.validateFormHistorial.controls['details'].invalid) {
         for (let i = 0; i < this.details.length; i++) {
-          /* this.details.at(i).get('name').markAsDirty();
-          this.details
-            .at(i)
-            .get('name')
-            .updateValueAndValidity({ onlySelf: true }); */
           this.details.at(i).get('descripcion').markAsDirty();
           this.details.at(i).get('descripcion').updateValueAndValidity({
             onlySelf: true,
@@ -127,7 +116,6 @@ export class AddComponent implements OnInit {
       });
     }
 
-    //añadir formDataHistorial a formData con nombre historial
     formData.historial = formDataHistorial;
 
     this.loading = true;

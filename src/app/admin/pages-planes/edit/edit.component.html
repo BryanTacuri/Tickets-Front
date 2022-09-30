@@ -1,5 +1,5 @@
 <nz-page-header nzBackIcon [nzGhost]="false">
-    <nz-page-header-title>Editar plan</nz-page-header-title>
+    <nz-page-header-title>Editar ticket</nz-page-header-title>
     <nz-page-header-extra>
         <nz-space>
             <button *nzSpaceItem nz-button (click)="back()">Cancelar</button>
@@ -10,10 +10,12 @@
 
 
 <nz-spin [nzSpinning]="loading">
+
     <div class="inner-content">
         <div class="form">
             <div class="form-goup">
-                <form nz-form [formGroup]="validateForm">
+
+                <form nz-form [formGroup]="validateFormTicket">
 
                     <nz-form-item>
                         <nz-form-label [nzSpan]="7" nzRequired>Persona solicitante</nz-form-label>
@@ -63,21 +65,28 @@
                         </nz-form-control>
                     </nz-form-item>
 
-
                     <nz-form-item>
-                        <nz-form-label [nzSpan]="7">Status</nz-form-label>
-                        <nz-select ngModel={{ticket.status}} formControlName="status">
-                            <nz-option nzValue="P" nzLabel="Pendiente"></nz-option>
-                            <nz-option nzValue="C" nzLabel="Cerrado"></nz-option>
-                        </nz-select>
+                        <nz-form-label [nzSpan]="7">Estado</nz-form-label>
+                        <nz-form-control [nzSpan]="5">
+                            <nz-select ngModel={{ticket.status}} formControlName="status">
+                                <nz-option nzValue="P" nzLabel="Pendiente"></nz-option>
+                                <nz-option nzValue="C" nzLabel="Cerrado"></nz-option>
+                            </nz-select>
+
+                        </nz-form-control>
 
                     </nz-form-item>
 
 
                 </form>
 
-                <form nz-form [formGroup]="validateFormHistorial">
-                    <nz-divider nzText="Historial de incidencias"></nz-divider>
+
+                <form nz-form [formGroup]="validateForm">
+
+
+                    <nz-divider style="color: #3e467d; font-size: 20px; font-weight: bold;"
+                        nzText="Historial de incidencias"></nz-divider>
+
                     <nz-form-item>
                         <nz-form-label [nzSpan]="7" nzRequired>Usuario soporte</nz-form-label>
                         <nz-form-control [nzSpan]="12" nzErrorTip="Por favor escriba un nombre!">
@@ -102,7 +111,6 @@
                     </nz-form-item>
 
 
-
                     <div formArrayName="details" *ngFor="let detail of details.controls; let i = index">
 
                         <div [formGroupName]="i">
@@ -119,8 +127,11 @@
 
                             <br>
                             <br>
+
+
+
                             <nz-form-item>
-                                <nz-form-label [attr.for]="'descripcion' + i" [nzSpan]="7" nzRequired>Descripción del
+                                <nz-form-label [attr.for]="'description' + i" [nzSpan]="7" nzRequired>Descripción del
                                     detalle
                                 </nz-form-label>
 
@@ -137,10 +148,12 @@
                                 </nz-form-control>
                             </nz-form-item>
 
+
+
                         </div>
                     </div>
 
-                    <!--  <nz-divider nzDashed [nzText]="text">
+                    <nz-divider nzDashed [nzText]="text">
                         <ng-template #text>
 
                             <button nz-button nzType="primary" (click)="addDetail(details.controls.length)">
@@ -149,7 +162,7 @@
                             </button>
 
                         </ng-template>
-                    </nz-divider> -->
+                    </nz-divider>
 
 
                 </form>

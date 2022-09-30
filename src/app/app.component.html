@@ -2,17 +2,14 @@
 
   <nz-sider *ngIf="this.valueService.isAuthenticated == true" nzCollapsible [(nzCollapsed)]="isCollapsed"
     [nzTrigger]="null">
-    <!-- <div class="logo">
-      <img class="imagelogo" src="assets/img/logoCruvermed.png" alt="">
-    </div> -->
     <div class="logo">
 
     </div>
     <ul nz-menu nzTheme="dark" nzMode="inline">
-      <li nz-submenu nzTitle="Planes" nzIcon="container">
+      <li nz-submenu nzTitle="Tickets" nzIcon="container">
         <ul>
-          <li nz-menu-item nzMatchRouter nzMatchRouterExact routerLink="ticket/list">Listado</li>
-          <li nz-menu-item nzMatchRouter nzMatchRouterExact routerLink="ticket//add">Agregar</li>
+          <li nz-menu-item nzMatchRouter nzMatchRouterExact routerLink="admin/ticket/list">Listado</li>
+          <li nz-menu-item nzMatchRouter nzMatchRouterExact routerLink="admin/ticket/add">Agregar</li>
         </ul>
       </li>
 

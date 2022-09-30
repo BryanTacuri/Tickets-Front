@@ -7,6 +7,9 @@
 <app-barra></app-barra>
 
 
+<br>
+
+
 <nz-spin [nzSpinning]="loading">
 
     <nz-table nzNoResult={{dataFound}} nzSize="middle" nzTableLayout="fixed" [nzFrontPagination]="false"
@@ -19,7 +22,7 @@
                 <th nzColumnKey="fecha_ingreso" [nzSortFn]="true">Fecha de ingreso</th>
                 <th nzColumnKey="asunto" [nzSortFn]="true">Asunto</th>
                 <th nzColumnKey="descripcion" [nzSortFn]="true">Descripción</th>
-                <th nzColumnKey="status" [nzFilters]="filterGender" [nzFilterFn]="true">Estatus</th>
+                <th nzAlign="center" nzColumnKey="status" [nzFilters]="filterGender" [nzFilterFn]="true">Estado</th>
                 <th nzColumnKey="Acciones">Acciones</th>
             </tr>
         </thead>
@@ -34,16 +37,18 @@
                 <td nzEllipsis>{{ ticket.asunto }}</td>
                 <td nzEllipsis>{{ ticket.descripcion }}</td>
                 <td nzAlign="center">
-                    <nz-tag style="padding: 0px 25px 0px;" [nzColor]="ticket.status != 'P' ? '#2db7f5' : '#f50'">
-                        {{ ticket.status }}
+                    <nz-tag style="padding: 0px 25px 0px;" [nzColor]="ticket.status != 'P' ? '#2db7f5' : '#f50'"
+                        nz-tooltip [nzTooltipTitle]="ticket.status != 'P' ? 'Cerrado' : 'Pendiente'">
+                        {{ticket.status}}
+
+
                     </nz-tag>
                 </td>
 
                 <td>
                     <a (click)="editRow(ticket.id)">Editar</a>
                     <nz-divider nzType="vertical"></nz-divider>
-                    <a *ngIf="ticket.status == 'P'" style="color: #ff4d4f" nz-popconfirm
-                        nzPopconfirmTitle="¿Esta seguro de eliminar el ticket?"
+                    <a style="color: #ff4d4f" nz-popconfirm nzPopconfirmTitle="¿Esta seguro de eliminar el ticket?"
                         (nzOnConfirm)="deleteRow(ticket.id)">Eliminar</a>
 
                 </td>

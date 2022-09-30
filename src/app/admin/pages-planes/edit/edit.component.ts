@@ -7,6 +7,7 @@ import { HistorialDetalle } from 'src/app/models/HistorialDetalle';
 import { Ticket } from 'src/app/models/Ticket';
 import { TicketService } from 'src/app/services/ticket.service';
 import { ValueService } from 'src/app/services/value.service';
+import { formatISO } from 'date-fns';
 
 @Component({
   selector: 'app-edit',
@@ -16,26 +17,28 @@ import { ValueService } from 'src/app/services/value.service';
 export class EditComponent implements OnInit {
   loading: boolean = false;
   ticket: Ticket = new Ticket();
-  historial_detalle: HistorialDetalle[] = [];
   historial: Historial = new Historial();
+  historial_detalle: HistorialDetalle[] = [];
   validateForm!: FormGroup;
+  validateFormTicket!: FormGroup;
   detailsFromGrup!: FormGroup;
+
   id: any;
   htmlContent: any;
-  validateFormHistorial!: FormGroup;
   detailDelete: HistorialDetalle[] = [];
+  idDetail: string;
+  colorDegradado: string;
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private ticketService: TicketService,
     private message: NzMessageService,
-
     public valueService: ValueService
   ) {}
 
   get details(): any {
-    return this.validateFormHistorial.get('details') as FormArray;
+    return this.validateForm.get('details') as FormArray;
   }
 
   addDetail(id: any): void {
@@ -55,6 +58,7 @@ export class EditComponent implements OnInit {
     if (this.historial_detalle.length > 0) {
       if (id != '' && id != null) {
         this.historial_detalle[index].status = 'E';
+
         this.detailDelete.push(this.historial_detalle[index]);
       }
     }
@@ -62,7 +66,7 @@ export class EditComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.validateForm = this.fb.group({
+    this.validateFormTicket = this.fb.group({
       persona_solicitante: [null, [Validators.required]],
 
       fecha_ingreso: [null],
@@ -70,26 +74,32 @@ export class EditComponent implements OnInit {
       descripcion: [null, [Validators.maxLength(150)]],
       status: [null],
     });
-    this.validateFormHistorial = this.fb.group({
+
+    this.validateForm = this.fb.group({
+      id: [null],
       usuario_soporte: [null, [Validators.required]],
-      comentario: [null],
+
+      comentario: [null, [Validators.maxLength(150)]],
+      fecha_atencion: [null, [Validators.required]],
+      tickets_id: [null],
 
       details: this.fb.array([
         this.fb.group({
-          id: [null],
-          status: [null],
-          description: [
+          // name: [null, [Validators.required]],
+          descripcion: [
             null,
             Validators.compose([
               Validators.required,
               Validators.maxLength(150),
             ]),
           ],
+          id: [null],
+          status: [null],
         }),
       ]),
     });
 
-    let p1 = this.getTicketById(this.valueService.idPlan);
+    let p1 = this.getTicketbyId(this.valueService.idTicket);
 
     this.loading = true;
     Promise.all([p1]).then(
@@ -101,15 +111,16 @@ export class EditComponent implements OnInit {
     );
   }
 
-  getTicketById(id: any): Promise<void> {
+  getTicketbyId(id: any): Promise<void> {
     return new Promise((resolve, reject) => {
       this.ticketService
         .getById(`?embed[]=historialIncidencia.historialDetalles`, id)
         .subscribe({
           next: (res) => {
             this.ticket = res;
+            this.historial = this.ticket.historial_incidencia;
 
-            this.validateForm.patchValue({
+            this.validateFormTicket.patchValue({
               persona_solicitante: this.ticket.persona_solicitante,
               fecha_ingreso: this.ticket.fecha_ingreso,
               asunto: this.ticket.asunto,
@@ -117,34 +128,32 @@ export class EditComponent implements OnInit {
               status: this.ticket.status,
             });
 
+            this.validateForm.patchValue({
+              id: this.historial.id,
+              usuario_soporte: this.historial.usuario_soporte,
+              comentario: this.historial.comentario,
+              fecha_atencion: this.historial.fecha_atencion,
+              tickets_id: this.historial.tickets_id,
+            });
             this.removeDetail(0);
 
-            this.historial_detalle =
-              this.ticket.historial_incidencia.historial_detalles;
+            this.historial_detalle = this.historial.historial_detalles;
 
-            this.validateFormHistorial.patchValue({
-              usuario_soporte: this.ticket.historial_incidencia.usuario_soporte,
-              comentario: this.ticket.historial_incidencia.comentario,
-            });
-
-            for (let i = 0; i < this.historial_detalle.length; i++) {
-              this.addDetail(this.historial_detalle[i]);
-              console.log(this.historial_detalle[i].descripcion);
-
+            for (let i = 0; i < this.historial.historial_detalles.length; i++) {
+              this.addDetail(this.historial.historial_detalles[i].id);
               this.details.at(i).patchValue({
-                id: this.historial_detalle[i].id,
-                status: this.historial_detalle[i].status,
-                descripcion: this.historial_detalle[i].descripcion,
+                descripcion: this.historial.historial_detalles[i].descripcion,
+                id: this.historial.historial_detalles[i].id,
+                status: this.historial.historial_detalles[i].status,
               });
             }
-            console.log(
-              'aver',
-              this.details.controls[0].get('descripcion').value
-            );
+
+            this.loading = false;
 
             resolve();
           },
           error: (err) => {
+            this.loading = false;
             reject(err);
           },
         });
@@ -156,12 +165,16 @@ export class EditComponent implements OnInit {
   }
 
   submitForm(): void {
-    if (this.validateForm.valid && this.validateFormHistorial.valid) {
-      this.updatePlan(
-        this.validateForm.value,
-        this.validateFormHistorial.value
-      );
+    if (this.validateForm.valid && this.validateFormTicket.valid) {
+      this.updateTicket(this.validateForm.value, this.validateFormTicket.value);
     } else {
+      this.message.error('Complete los campos requeridos');
+      Object.values(this.validateFormTicket.controls).forEach((control) => {
+        if (control.invalid) {
+          control.markAsDirty();
+          control.updateValueAndValidity({ onlySelf: true });
+        }
+      });
       Object.values(this.validateForm.controls).forEach((control) => {
         if (control.invalid) {
           control.markAsDirty();
@@ -169,8 +182,13 @@ export class EditComponent implements OnInit {
         }
       });
 
-      if (this.validateFormHistorial.controls['details'].invalid) {
+      if (this.validateForm.controls['details'].invalid) {
         for (let i = 0; i < this.details.length; i++) {
+          /*     this.details.at(i).get('name').markAsDirty();
+          this.details
+            .at(i)
+            .get('name')
+            .updateValueAndValidity({ onlySelf: true }); */
           this.details.at(i).get('descripcion').markAsDirty();
           this.details.at(i).get('descripcion').updateValueAndValidity({
             onlySelf: true,
@@ -180,27 +198,37 @@ export class EditComponent implements OnInit {
     }
   }
 
-  updatePlan(formData: any, formDataHistorial: any): void {
+  updateTicket(formData: any, formDataTicket: any): void {
     for (let i = 0; i < this.detailDelete.length; i++) {
       formData.details.push(this.detailDelete[i]);
     }
-    formData.historial = formDataHistorial;
 
-    console.log(formData);
-    /* 
+    if (
+      formDataTicket.fecha_ingreso != null &&
+      typeof formDataTicket.fecha_ingreso == 'object'
+    ) {
+      formDataTicket.fecha_ingreso = formatISO(formDataTicket.fecha_ingreso, {
+        representation: 'date',
+      });
+    }
+
+    formDataTicket.historial = formData;
+    console.log('datafinal', formDataTicket);
+
     this.loading = true;
-    this.ticketService.updatePlan(formData, this.valueService.idPlan).subscribe({
-      next: (res) => {
-        this.loading = false;
-        this.message.success('Plan actualizado correctamente');
+    this.ticketService
+      .updateTicket(formDataTicket, this.valueService.idTicket)
+      .subscribe({
+        next: (res) => {
+          this.loading = false;
+          this.message.success('ticket actualizado correctamente');
 
-        this.router.navigate(['/admin/plan']);
-      },
-      error: (err) => {
-        this.loading = false;
-        this.message.error(err.error.message || JSON.stringify(err.error));
-      },
-    });
-  */
+          this.router.navigate(['/admin']);
+        },
+        error: (err) => {
+          this.loading = false;
+          this.message.error(err.error.message || JSON.stringify(err.error));
+        },
+      });
   }
 }
